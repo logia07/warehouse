@@ -1,7 +1,7 @@
-from __future__ import annotations
+from typing import List, Optional
 from pydantic import BaseModel, field_validator
-from typing import List
-from .category import CategoryBase  # ← относительный импорт
+from .category import CategoryBase
+from pydantic.config import ConfigDict
 
 class ItemBase(BaseModel):
     id: int
@@ -9,8 +9,7 @@ class ItemBase(BaseModel):
     price: float
     quantity: int
     categories: List[CategoryBase] = []
-
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 class ItemCreate(BaseModel):
     name: str
@@ -35,5 +34,5 @@ class ItemCreate(BaseModel):
 class ItemUpdate(ItemCreate):
     pass
 
-# ВАЖНО: rebuild после всех объявлений
+# После всех объявлений
 ItemBase.model_rebuild()

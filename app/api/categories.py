@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from app.dependencies import get_db
 from app.database import SessionLocal
 from app.models.category import Category
 from app.schemas.category import CategoryBase

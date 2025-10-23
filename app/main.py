@@ -1,35 +1,51 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.database import Base, engine, SessionLocal
 from app.models.category import Category
+from app.models.user import User
+from app.security import get_password_hash
+from app.api.items import router as items_router
+from app.api.categories import router as categories_router
+from app.api.auth import router as auth_router
 
-# Инициализация категорий
-def init_categories(db):
-    names = ["Компьютерные товары", "Товары для дома", "Товары для машины", "Прочее"]
-    for name in names:
-        if not db.query(Category).filter(Category.name == name).first():
-            db.add(Category(name=name))
-    db.commit()
+# ⬇️ Добавь этот импорт
+from fastapi.staticfiles import StaticFiles
 
-# Lifespan: старт и завершение
+
 @asynccontextmanager
-async def lifespan(app:FastAPI):
+async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-    init_categories(db)
+
+    # Создание категорий
+    for name in ["Компьютерные товары", "Товары для дома", "Товары для машины", "Прочее"]:
+        if not db.query(Category).filter(Category.name == name).first():
+            db.add(Category(name=name))
+
+    # Создание admin
+    if not db.query(User).filter(User.username == "admin").first():
+        db.add(User(
+            username="admin",
+            hashed_password=get_password_hash("admin123"),
+            role="admin"
+        ))
+    db.commit()
     db.close()
     yield
 
-# Создание приложения
+
+# Создаём приложение
 app = FastAPI(title="Склад Товаров", lifespan=lifespan)
 
-# Подключаем роутеры
-from app.api.items import router as items_router
-from app.api.categories import router as categories_router
+# 🔥 Подключаем статику ПОСЛЕ создания app
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+# Подключаем роутеры
+app.include_router(auth_router, prefix="/auth")
 app.include_router(items_router)
 app.include_router(categories_router)
 
+
 @app.get("/")
 def root():
-    return {"message": "Склад запущен! Открой /docs"}
+    return {"message": "Склад запущен! /docs"}

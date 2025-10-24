@@ -38,10 +38,10 @@ app = FastAPI(title="Склад Товаров", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Позже замени на ['https://my-warehouse.onrender.com']
+    allow_origins=["https://warehouse-1-czm8.onrender.com/"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["https://warehouse-1-czm8.onrender.com/"],
+    allow_headers=["https://warehouse-1-czm8.onrender.com/"],
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

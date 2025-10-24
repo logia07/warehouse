@@ -7,8 +7,7 @@ from app.security import get_password_hash
 from app.api.items import router as items_router
 from app.api.categories import router as categories_router
 from app.api.auth import router as auth_router
-
-# ⬇️ Добавь этот импорт
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 
@@ -37,7 +36,14 @@ async def lifespan(app: FastAPI):
 # Создаём приложение
 app = FastAPI(title="Склад Товаров", lifespan=lifespan)
 
-# 🔥 Подключаем статику ПОСЛЕ создания app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Позже замени на ['https://my-warehouse.onrender.com']
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Подключаем роутеры
